@@ -26,6 +26,7 @@ export default function Home() {
   const pathname = usePathname()
 
   useEffect(() => {
+    console.log(socket.connected)
     if (socket.connected) {
       onConnect();
     }
