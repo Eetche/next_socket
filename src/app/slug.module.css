@@ -1,0 +1,21 @@
+.roomId {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+}
+
+.slot {
+    transition: all 100ms;
+}
+
+.slot:hover {
+    background-color: rgb(50, 50, 50);
+}
+
+.slugPage {
+    min-width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

@@ -1,4 +1,33 @@
 .newGameBtn {
     cursor: pointer;
     text-transform: uppercase;
+    margin: 5px;
+    width: 20%;
+    height: 3rem;
+}
+
+.joinGameBtn {
+    cursor: pointer;
+    text-transform: uppercase;
+    margin: 5px;
+    width: 20%;
+    height: 3rem;
+}
+
+.idInput {
+    margin: 0px;
+    padding: 0;
+    width: 20%;
+    padding: 10px;
+    height: 3rem;
+}
+
+.page {
+    min-width: 100vw;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
 }

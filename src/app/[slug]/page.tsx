@@ -3,12 +3,13 @@
 import { useParams, usePathname } from "next/navigation";
 import { socket } from "../socket";
 import { useEffect, useState } from "react";
+import styles from "../slug.module.css";
 
 export default function Page() {
   const [isConnected, setIsConnected] = useState(false);
   const [transport, setTransport] = useState("N/A");
 
-  let params : any = useParams()
+  let params: any = useParams();
 
   useEffect(() => {
     if (socket.connected) {
@@ -34,12 +35,12 @@ export default function Page() {
     socket.on("disconnect", onDisconnect);
 
     socket.on("game_join", (value) => {
-        console.log("game join:", value)
-    })
+      console.log("game join:", value);
+    });
 
     socket.on("move_received", () => {
-        console.log("move")
-    })
+      console.log("move");
+    });
 
     return () => {
       socket.off("connect", onConnect);
@@ -48,13 +49,31 @@ export default function Page() {
   }, []);
 
   const buttonHandler = () => {
-    socket.emit("move", {slug: params.slug})
-  }
+    socket.emit("move", { slug: params.slug });
+  };
 
   return (
-    <div>
-      <h1>ID Комнаты: {params.slug}</h1>
-      <button onClick={buttonHandler}>Test</button>
+    <div className={styles.slugPage}>
+      <p className={styles.roomId}>ID Комнаты: {params.slug}</p>
+      <table>
+        <tbody>
+          <tr>
+            <td className={styles.slot}>А</td>
+            <td className={styles.slot}>А</td>
+            <td className={styles.slot}>А</td>
+          </tr>
+          <tr>
+            <td className={styles.slot}>А</td>
+            <td className={styles.slot}>А</td>
+            <td className={styles.slot}>А</td>
+          </tr>
+          <tr>
+            <td className={styles.slot}>А</td>
+            <td className={styles.slot}>А</td>
+            <td className={styles.slot}>А</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }
