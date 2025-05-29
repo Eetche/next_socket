@@ -4,6 +4,7 @@ import styles from "./page.module.css";
 
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { setCookie } from "./api/cookies";
 
 import { socket } from "./socket";
 
@@ -26,13 +27,16 @@ export default function Home() {
   const pathname = usePathname();
 
   useEffect(() => {
-    console.log(socket.connected);
+    setCookie("username", "dmitry");
+
     if (socket.connected) {
       onConnect();
     }
 
     function onConnect() {
       console.log("new client connection:", socket.id);
+
+      socket.emit("get_username", "123123");
 
       setIsConnected(true);
       setTransport(socket.io.engine.transport.name);
@@ -60,12 +64,11 @@ export default function Home() {
     };
   }, []);
 
-  const newGameButtonHandler = async () => {
+
+  const newGameButtonHandler = async () => { //
     const socketId: any = socket.id;
-    const roomExist: unknown = await checkRoomExists(input);
 
     if (!input) {
-      console.log("client emit message");
       socket.emit("join", { value: socketId });
       router.push(socketId); // создание новой комнаты
     }
@@ -76,9 +79,7 @@ export default function Home() {
     const roomExist: unknown = await checkRoomExists(input);
 
     if (roomExist) {
-      console.log(checkRoomExists(input));
       socket.emit("guess_join", { value: socketId, input: input });
-      console.log(`guess ${socketId} joined to ${input}`);
       router.push(input); // присоеденение гостя к хосту
     }
   };
@@ -97,7 +98,9 @@ export default function Home() {
       >
         new game
       </button>
-      <button className={styles.joinGameBtn} onClick={joinGameButtonHandler}>join game</button>
+      <button className={styles.joinGameBtn} onClick={joinGameButtonHandler}>
+        join game
+      </button>
     </div>
   );
 }

@@ -29,8 +29,12 @@ app.prepare().then(() => {
 
     socket.on("guess_join", (data) => {
         socket.join(data.input)
-        console.log("guess join:", data.input)
-        socket.to(data.input).emit("game_join", data.input)
+    })
+
+    socket.on("guess_join_by_url", (room) => {
+      if (io.sockets.adapter.rooms.has(room)) {
+        socket.join(room)
+      }
     })
 
     socket.on("move", (data) => {
@@ -42,6 +46,7 @@ app.prepare().then(() => {
           })
         }
     })
+
 
   });
 

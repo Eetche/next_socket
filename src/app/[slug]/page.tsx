@@ -1,22 +1,48 @@
 "use client";
 
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import { socket } from "../socket";
 import { useEffect, useState } from "react";
-import styles from "../slug.module.css";
+import styles from "./slug.module.css";
+import { getCookie } from "../api/cookies";
+
+function checkRoomExists(roomName: string) {
+  return new Promise((resolve) => {
+    socket.emit("checkRoomExists", roomName, (res: any) => {
+      resolve(res);
+    });
+  });
+}
 
 export default function Page() {
   const [isConnected, setIsConnected] = useState(false);
   const [transport, setTransport] = useState("N/A");
 
+  const router = useRouter()
+
   let params: any = useParams();
 
+  const [username, setUsername] = useState("")
+
+
   useEffect(() => {
+    setUsername(getCookie("username"))
+
+    socket.emit("guess_join_by_url", params.slug);
+
     if (socket.connected) {
       onConnect();
     }
-    function onConnect() {
+    async function onConnect() {
       console.log("new client connection:", socket.id);
+
+      const roomExists = await checkRoomExists(params.slug)
+
+      console.log(roomExists)
+
+      if (!roomExists) {
+        router.replace("roomError")
+      }
 
       setIsConnected(true);
       setTransport(socket.io.engine.transport.name);
@@ -48,32 +74,21 @@ export default function Page() {
     };
   }, []);
 
-  const buttonHandler = () => {
+  const teamsClickHandler = (team : string) => {
     socket.emit("move", { slug: params.slug });
   };
 
   return (
     <div className={styles.slugPage}>
-      <p className={styles.roomId}>ID Комнаты: {params.slug}</p>
-      <table>
-        <tbody>
-          <tr>
-            <td className={styles.slot}>А</td>
-            <td className={styles.slot}>А</td>
-            <td className={styles.slot}>А</td>
-          </tr>
-          <tr>
-            <td className={styles.slot}>А</td>
-            <td className={styles.slot}>А</td>
-            <td className={styles.slot}>А</td>
-          </tr>
-          <tr>
-            <td className={styles.slot}>А</td>
-            <td className={styles.slot}>А</td>
-            <td className={styles.slot}>А</td>
-          </tr>
-        </tbody>
-      </table>
+      <p className={styles.roomId}>ID Комнаты: {params.slug} <br/> Имя пользователя: {username}</p>
+      <div className={styles.teams}>
+        <div className={styles.leftTeam} onClick={() => teamsClickHandler("left")}>
+            LEFT TEAM
+        </div>
+        <div className={styles.rightTeam} onClick={() => teamsClickHandler("right")}>
+            RIGHT TEAM
+        </div>
+      </div>
     </div>
   );
 }

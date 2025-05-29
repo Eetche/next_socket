@@ -1,0 +1,39 @@
+.roomId {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+}
+
+.slugPage {
+  min-width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.teams {
+  width: 40%;
+  height: 10rem;
+  display: flex;
+  flex-direction: row;
+}
+
+.leftTeam {
+  width: 50%;
+  height: 100%;
+  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgb(100, 100, 100);
+}
+
+.rightTeam {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgb(100, 100, 100);
+}
