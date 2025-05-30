@@ -3,10 +3,10 @@
 import styles from "./page.module.css";
 
 import { useEffect, useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { setCookie } from "./api/cookies";
+import { useRouter } from "next/navigation";
+import { setCookie, getCookie } from "./api/cookies";
 
-import { socket } from "./socket";
+import { socket } from "./api/socket";
 
 function checkRoomExists(roomName: string) {
   return new Promise((resolve) => {
@@ -18,25 +18,28 @@ function checkRoomExists(roomName: string) {
 
 export default function Home() {
   const [input, setInput] = useState("");
+  const [usernameVal, setUsernameVal] = useState("");
 
   const [isConnected, setIsConnected] = useState(false);
   const [transport, setTransport] = useState("N/A");
 
+  const [usernamePropmtAl, setPromptAl] = useState(0);
+
+
   const router = useRouter();
 
-  const pathname = usePathname();
-
   useEffect(() => {
-    setCookie("username", "dmitry");
-
     if (socket.connected) {
       onConnect();
     }
 
-    function onConnect() {
-      console.log("new client connection:", socket.id);
+    if (getCookie("username")) {
+      setPromptAl(0)
+    } else {
+      setPromptAl(1)
+    }
 
-      socket.emit("get_username", "123123");
+    function onConnect() {
 
       setIsConnected(true);
       setTransport(socket.io.engine.transport.name);
@@ -54,18 +57,14 @@ export default function Home() {
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
 
-    socket.on("message", (data) => {
-      alert(`new message from server: ${data.value}`);
-    });
-
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
   }, []);
 
-
-  const newGameButtonHandler = async () => { //
+  const newGameButtonHandler = async () => {
+    //
     const socketId: any = socket.id;
 
     if (!input) {
@@ -81,6 +80,13 @@ export default function Home() {
     if (roomExist) {
       socket.emit("guess_join", { value: socketId, input: input });
       router.push(input); // присоеденение гостя к хосту
+    }
+  };
+
+  const usernameSubmitHandler = () => {
+    if (usernameVal) {
+      setPromptAl(0)
+      setCookie("username", usernameVal);
     }
   };
 
@@ -101,6 +107,20 @@ export default function Home() {
       <button className={styles.joinGameBtn} onClick={joinGameButtonHandler}>
         join game
       </button>
+      <div className={styles.usernamePrompt} style={{display: (usernamePropmtAl) ? "flex" : "none"}}>
+        <input
+          type="text"
+          className={styles.usernameInput}
+          placeholder="Имя пользователя"
+          onChange={(e) => setUsernameVal(e.target.value)}
+        />
+        <input
+          type="button"
+          value="Подтвердить"
+          onClick={usernameSubmitHandler}
+          className={styles.usernameSubmit}
+        />
+      </div>
     </div>
   );
 }

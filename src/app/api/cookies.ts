@@ -12,5 +12,6 @@ export function getCookie(name: CookieArgs) {
           "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
         ));
         return (matches ? decodeURIComponent(matches[1]) : undefined) as any;
-    }
+        // just copy paste function for get cookie by name
+      }
 }

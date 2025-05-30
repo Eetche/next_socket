@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, usePathname, useRouter } from "next/navigation";
-import { socket } from "../socket";
+import { socket } from "../api/socket";
 import { useEffect, useState } from "react";
 import styles from "./slug.module.css";
 import { getCookie } from "../api/cookies";
@@ -75,7 +75,8 @@ export default function Page() {
   }, []);
 
   const teamsClickHandler = (team : string) => {
-    socket.emit("move", { slug: params.slug });
+
+
   };
 
   return (

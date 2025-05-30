@@ -37,16 +37,6 @@ app.prepare().then(() => {
       }
     })
 
-    socket.on("move", (data) => {
-      if (socket.rooms.has(data.slug)) {
-          console.log(`move to: ${data.slug}, SENDER: ${socket.id}`)
-          io.to(data.slug).emit("move_received", {
-            from: socket.id,
-            slug: data.slug
-          })
-        }
-    })
-
 
   });
 
