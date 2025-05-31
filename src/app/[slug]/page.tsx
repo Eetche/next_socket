@@ -25,6 +25,11 @@ export default function Page() {
   const [username, setUsername] = useState("")
 
 
+  const teams = {
+    leftTeam: [],
+    rightTeam: []
+  }
+
   useEffect(() => {
     setUsername(getCookie("username"))
 
@@ -41,7 +46,7 @@ export default function Page() {
       console.log(roomExists)
 
       if (!roomExists) {
-        router.replace("roomError")
+        router.replace("404") // redirect user to 404 page
       }
 
       setIsConnected(true);
@@ -75,7 +80,7 @@ export default function Page() {
   }, []);
 
   const teamsClickHandler = (team : string) => {
-
+    
 
   };
 
@@ -85,9 +90,13 @@ export default function Page() {
       <div className={styles.teams}>
         <div className={styles.leftTeam} onClick={() => teamsClickHandler("left")}>
             LEFT TEAM
+            <p></p>
+            <p></p>
         </div>
         <div className={styles.rightTeam} onClick={() => teamsClickHandler("right")}>
             RIGHT TEAM
+            <p></p>
+            <p></p>
         </div>
       </div>
     </div>

@@ -18,17 +18,13 @@ app.prepare().then(() => {
     console.log("new server connection: ", socket.id);
 
     socket.on("join", (data) => {
-        socket.join(data.value)
-        console.log("host join:", data.value)
+      socket.join(data.value)
+      console.log("join:", data.value)
     });
 
     socket.on("checkRoomExists", (roomName, callback) => {
-        const roomExists = io.sockets.adapter.rooms.has(roomName)
-        callback(roomExists)
-    })
-
-    socket.on("guess_join", (data) => {
-        socket.join(data.input)
+      const roomExists = io.sockets.adapter.rooms.has(roomName)
+      callback(roomExists)
     })
 
     socket.on("guess_join_by_url", (room) => {
@@ -41,6 +37,6 @@ app.prepare().then(() => {
   });
 
   httpServer.listen(port, () => {
-    console.log(`> listen on http://${hostname}:${port}`);
+    console.log(`> listen on http://${hostname}:${port} as ${dev ? "development" : process.env.NODE_ENV}`);
   });
 });

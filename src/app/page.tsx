@@ -8,6 +8,8 @@ import { setCookie, getCookie } from "./api/cookies";
 
 import { socket } from "./api/socket";
 
+import UsernamePrompt from "./components/usernamePrompt/usernamePrompt";
+
 function checkRoomExists(roomName: string) {
   return new Promise((resolve) => {
     socket.emit("checkRoomExists", roomName, (res: any) => {
@@ -31,12 +33,6 @@ export default function Home() {
   useEffect(() => {
     if (socket.connected) {
       onConnect();
-    }
-
-    if (getCookie("username")) {
-      setPromptAl(0)
-    } else {
-      setPromptAl(1)
     }
 
     function onConnect() {
@@ -68,7 +64,7 @@ export default function Home() {
     const socketId: any = socket.id;
 
     if (!input) {
-      socket.emit("join", { value: socketId });
+      socket.emit("join", { value: socketId  });
       router.push(socketId); // создание новой комнаты
     }
   };
@@ -78,15 +74,8 @@ export default function Home() {
     const roomExist: unknown = await checkRoomExists(input);
 
     if (roomExist) {
-      socket.emit("guess_join", { value: socketId, input: input });
+      socket.emit("join", { value: socketId });
       router.push(input); // присоеденение гостя к хосту
-    }
-  };
-
-  const usernameSubmitHandler = () => {
-    if (usernameVal) {
-      setPromptAl(0)
-      setCookie("username", usernameVal);
     }
   };
 
@@ -107,20 +96,7 @@ export default function Home() {
       <button className={styles.joinGameBtn} onClick={joinGameButtonHandler}>
         join game
       </button>
-      <div className={styles.usernamePrompt} style={{display: (usernamePropmtAl) ? "flex" : "none"}}>
-        <input
-          type="text"
-          className={styles.usernameInput}
-          placeholder="Имя пользователя"
-          onChange={(e) => setUsernameVal(e.target.value)}
-        />
-        <input
-          type="button"
-          value="Подтвердить"
-          onClick={usernameSubmitHandler}
-          className={styles.usernameSubmit}
-        />
-      </div>
+      <UsernamePrompt/>
     </div>
   );
 }
