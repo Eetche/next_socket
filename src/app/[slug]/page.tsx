@@ -1,10 +1,12 @@
 "use client";
 
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { socket } from "../api/socket";
 import { useEffect, useState } from "react";
 import styles from "./slug.module.css";
 import { getCookie } from "../api/cookies";
+
+import UsernamePrompt from "../components/usernamePrompt/usernamePrompt";
 
 function checkRoomExists(roomName: string) {
   return new Promise((resolve) => {
@@ -25,10 +27,8 @@ export default function Page() {
   const [username, setUsername] = useState("")
 
 
-  const teams = {
-    leftTeam: [],
-    rightTeam: []
-  }
+  const [leftTeam, setLeftTeam] = useState<string[]>([])
+  const [rightTeam, setRightTeam] = useState<string[]>([])
 
   useEffect(() => {
     setUsername(getCookie("username"))
@@ -73,32 +73,43 @@ export default function Page() {
       console.log("move");
     });
 
+
+    socket.on("update_teams", (teams) => {
+      setLeftTeam(teams.leftTeam)
+      setRightTeam(teams.rightTeam)
+    })
+
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
   }, []);
 
-  const teamsClickHandler = (team : string) => {
+  const teamsClickHandler = (team: string) => {
+    socket.emit("teamHand", {
+      slug: params.slug,
+      leftTeam: leftTeam,
+      rightTeam: rightTeam,
+      username: username,
+      team: team
+    })
     
-
   };
 
   return (
     <div className={styles.slugPage}>
-      <p className={styles.roomId}>ID Комнаты: {params.slug} <br/> Имя пользователя: {username}</p>
+      <p className={styles.roomId}>ID Комнаты: {params.slug} <br /> Имя пользователя: {username}</p>
       <div className={styles.teams}>
         <div className={styles.leftTeam} onClick={() => teamsClickHandler("left")}>
-            LEFT TEAM
-            <p></p>
-            <p></p>
+          <p>{leftTeam[0]}</p>
+          <p>{leftTeam[1]}</p>
         </div>
         <div className={styles.rightTeam} onClick={() => teamsClickHandler("right")}>
-            RIGHT TEAM
-            <p></p>
-            <p></p>
+          <p>{rightTeam[0]}</p>
+          <p>{rightTeam[1]}</p>
         </div>
       </div>
+      <UsernamePrompt />
     </div>
   );
 }

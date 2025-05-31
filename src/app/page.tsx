@@ -4,7 +4,6 @@ import styles from "./page.module.css";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { setCookie, getCookie } from "./api/cookies";
 
 import { socket } from "./api/socket";
 
@@ -24,9 +23,6 @@ export default function Home() {
 
   const [isConnected, setIsConnected] = useState(false);
   const [transport, setTransport] = useState("N/A");
-
-  const [usernamePropmtAl, setPromptAl] = useState(0);
-
 
   const router = useRouter();
 

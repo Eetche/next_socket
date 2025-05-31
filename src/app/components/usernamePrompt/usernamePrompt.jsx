@@ -21,6 +21,7 @@ export default function UsernamePrompt() {
             setDisplayP("flex")
         }
     }, [])
+    
     return (
         <div className={styles.usernamePrompt} style={{ display: displayP }}>
             <input

@@ -32,6 +32,7 @@
     background-color: rgb(10, 10, 10);
     border-radius: 5px;
     transition: all 100ms ease;
+    text-align: center;
 }
 
 .usernameInput:focus {

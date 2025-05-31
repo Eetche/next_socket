@@ -9,7 +9,6 @@
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
 }
 
 .teams {
@@ -17,23 +16,23 @@
   height: 10rem;
   display: flex;
   flex-direction: row;
+  gap: 10%;
+  margin-top: 10%;
 }
 
-.leftTeam {
-  width: 50%;
-  height: 100%;
-  display: block;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid rgb(100, 100, 100);
-}
-
-.rightTeam {
+.leftTeam, .rightTeam {
+  cursor: pointer;
   width: 50%;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   border: 1px solid rgb(100, 100, 100);
+  background-color: rgb(30, 30, 30);
+  transition: all 100ms ease;
+  flex-direction: column;
+}
+
+.leftTeam:hover, .rightTeam:hover {
+  background-color: rgb(25, 25, 25);
 }

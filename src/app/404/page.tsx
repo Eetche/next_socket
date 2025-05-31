@@ -1,4 +1,4 @@
-import styles from "./roomError.module.css"
+import styles from "./404.module.css"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
