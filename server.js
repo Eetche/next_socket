@@ -94,13 +94,10 @@ app.prepare().then(() => {
     })
 
     socket.on("ready_hand", (isReady) => {
-      console.log(isReady)
       if (isReady) {
         playersReady.add(socket.id)
-        console.log("plus 1")
       } else {
         playersReady.delete(socket.id)
-        console.log("minus 1")
       }
 
       io.to(currentRoom).emit("ready_received", playersReady.size)
