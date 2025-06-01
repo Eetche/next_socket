@@ -17,11 +17,15 @@ app.prepare().then(() => {
   let leftTeam = []
   let rightTeam = []
 
+  let currentRoom;
+
   io.on("connection", (socket) => {
     console.log("new server connection: ", socket.id);
 
     socket.on("join", (data) => {
       socket.join(data.value)
+      currentRoom = data.value
+      socket.to(data.value).emit("join_receive")
       console.log("join:", data.value)
     });
 
@@ -30,10 +34,22 @@ app.prepare().then(() => {
       callback(roomExists)
     })
 
+    socket.on("checkPlayersCount", async (roomName, callback) => {
+      const sockets = await io.in(roomName).fetchSockets()
+      callback(sockets.length)
+    })
+
     socket.on("guess_join_by_url", (room) => {
       if (io.sockets.adapter.rooms.has(room)) {
+        currentRoom = room
         socket.join(room)
+        socket.to(room).emit("join_receive")
       }
+    })
+
+    socket.on("disconnect", () => {
+      console.log(`client disconnected: ${socket.id}, room: ${currentRoom}`)
+      socket.to(currentRoom).emit("decreasePlayer")
     })
 
     socket.on("teamHand", (data) => {
@@ -46,23 +62,22 @@ app.prepare().then(() => {
 
         if (rightTeam.includes(username)) {
           rightTeam = rightTeam.filter((player) => player !== username)
-          console.log(`массив после фильтра: ${rightTeam}`)
           leftTeam.push(username)
         } else if (!rightTeam.includes(username) && !leftTeam.includes(username)) {
           leftTeam.push(username)
-        } 
+        }
 
 
-      } else if (team == "right" && rightTeam.length < 2) { 
+      } else if (team == "right" && rightTeam.length < 2) {
 
-        if (leftTeam.includes(username)) { 
+        if (leftTeam.includes(username)) {
 
           leftTeam = leftTeam.filter((player) => player !== username)
           rightTeam.push(username)
 
         } else if (!leftTeam.includes(username) && !rightTeam.includes(username)) {
 
-          rightTeam.push(username) 
+          rightTeam.push(username)
 
         }
       }
@@ -75,8 +90,6 @@ app.prepare().then(() => {
       console.log(`rightTeam: ${rightTeam}`)
       console.log(`left team: ${leftTeam} \n`)
     })
-
-
   });
 
   httpServer.listen(port, () => {

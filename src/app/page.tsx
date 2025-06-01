@@ -47,7 +47,10 @@ export default function Home() {
     }
 
     socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
+    socket.on("disconnect", () => {
+      onDisconnect()
+      socket.emit("client_disconnect")
+    });
 
     return () => {
       socket.off("connect", onConnect);

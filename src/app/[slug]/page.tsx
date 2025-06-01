@@ -16,6 +16,14 @@ function checkRoomExists(roomName: string) {
   });
 }
 
+function checkPlayersInRoom(room: string) {
+  return new Promise((resolve) => {
+    socket.emit("checkPlayersCount", room, (res: any) => {
+      resolve(res)
+    })
+  })
+}
+
 export default function Page() {
   const [isConnected, setIsConnected] = useState(false);
   const [transport, setTransport] = useState("N/A");
@@ -30,8 +38,15 @@ export default function Page() {
   const [leftTeam, setLeftTeam] = useState<string[]>([])
   const [rightTeam, setRightTeam] = useState<string[]>([])
 
+  const [readyVal, setReadyVal] = useState(0)
+  const [playersVal, setPlayersVal] = useState(0)
+
   useEffect(() => {
+
     setUsername(getCookie("username"))
+
+
+    console.log(playersVal)
 
     socket.emit("guess_join_by_url", params.slug);
 
@@ -39,7 +54,10 @@ export default function Page() {
       onConnect();
     }
     async function onConnect() {
-      console.log("new client connection:", socket.id);
+
+      const playersCount: any = await checkPlayersInRoom(params.slug)
+      console.warn(playersCount)
+      setPlayersVal(playersCount)
 
       const roomExists = await checkRoomExists(params.slug)
 
@@ -60,13 +78,17 @@ export default function Page() {
     function onDisconnect() {
       setIsConnected(false);
       setTransport("N/A");
+
     }
 
     socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
+    socket.on("disconnect", () => {
+      onDisconnect()
+    });
 
-    socket.on("game_join", (value) => {
-      console.log("game join:", value);
+    socket.on("join_receive", async () => {
+      const playersCount: any = await checkPlayersInRoom(params.slug)
+      setPlayersVal(playersCount)
     });
 
     socket.on("move_received", () => {
@@ -77,6 +99,11 @@ export default function Page() {
     socket.on("update_teams", (teams) => {
       setLeftTeam(teams.leftTeam)
       setRightTeam(teams.rightTeam)
+    })
+
+    socket.on("decreasePlayer", async () => {
+      const playersCount: any = await checkPlayersInRoom(params.slug)
+      setPlayersVal(playersCount)
     })
 
     return () => {
@@ -93,11 +120,20 @@ export default function Page() {
       username: username,
       team: team
     })
-    
-  };
+  }
+
+  const readyBtnHandler = () => {
+    console.log(playersVal)
+    if (playersVal == 2 || playersVal == 4) {
+      alert("успешно")
+    } else {
+      alert("Нельзя запустить игру с неполными командами")
+    }
+  }
 
   return (
     <div className={styles.slugPage}>
+      <UsernamePrompt />
       <p className={styles.roomId}>ID Комнаты: {params.slug} <br /> Имя пользователя: {username}</p>
       <div className={styles.teams}>
         <div className={styles.leftTeam} onClick={() => teamsClickHandler("left")}>
@@ -109,7 +145,10 @@ export default function Page() {
           <p>{rightTeam[1]}</p>
         </div>
       </div>
-      <UsernamePrompt />
+      <div className={styles.ready}>
+        <p>{readyVal}/{playersVal}</p>
+        <button className={styles.readyBtn} onClick={readyBtnHandler}>Готов</button>
+      </div>
     </div>
-  );
+  )
 }
