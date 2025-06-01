@@ -47,10 +47,7 @@ export default function Home() {
     }
 
     socket.on("connect", onConnect);
-    socket.on("disconnect", () => {
-      onDisconnect()
-      socket.emit("client_disconnect")
-    });
+    socket.on("disconnect", onDisconnect);
 
     return () => {
       socket.off("connect", onConnect);
@@ -59,12 +56,11 @@ export default function Home() {
   }, []);
 
   const newGameButtonHandler = async () => {
-    //
     const socketId: any = socket.id;
 
     if (!input) {
       socket.emit("join", { value: socketId  });
-      router.push(socketId); // создание новой комнаты
+      router.push(socketId);
     }
   };
 
@@ -74,7 +70,7 @@ export default function Home() {
 
     if (roomExist) {
       socket.emit("join", { value: socketId });
-      router.push(input); // присоеденение гостя к хосту
+      router.push(input);
     }
   };
 

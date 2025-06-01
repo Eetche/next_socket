@@ -19,13 +19,15 @@ app.prepare().then(() => {
 
   let currentRoom;
 
+  let playersReady = new Set();
+
   io.on("connection", (socket) => {
     console.log("new server connection: ", socket.id);
 
     socket.on("join", (data) => {
       socket.join(data.value)
       currentRoom = data.value
-      socket.to(data.value).emit("join_receive")
+      socket.to(data.value).emit("update_players_count")
       console.log("join:", data.value)
     });
 
@@ -43,16 +45,16 @@ app.prepare().then(() => {
       if (io.sockets.adapter.rooms.has(room)) {
         currentRoom = room
         socket.join(room)
-        socket.to(room).emit("join_receive")
+        socket.to(room).emit("update_players_count")
       }
     })
 
     socket.on("disconnect", () => {
       console.log(`client disconnected: ${socket.id}, room: ${currentRoom}`)
-      socket.to(currentRoom).emit("decreasePlayer")
+      socket.to(currentRoom).emit("update_players_count")
     })
 
-    socket.on("teamHand", (data) => {
+    socket.on("team_hand", (data) => {
       const slug = data.slug
       const username = data.username
       const team = data.team
@@ -90,6 +92,21 @@ app.prepare().then(() => {
       console.log(`rightTeam: ${rightTeam}`)
       console.log(`left team: ${leftTeam} \n`)
     })
+
+    socket.on("ready_hand", (isReady) => {
+      console.log(isReady)
+      if (isReady) {
+        playersReady.add(socket.id)
+        console.log("plus 1")
+      } else {
+        playersReady.delete(socket.id)
+        console.log("minus 1")
+      }
+
+      io.to(currentRoom).emit("ready_received", playersReady.size)
+    
+    })  
+
   });
 
   httpServer.listen(port, () => {

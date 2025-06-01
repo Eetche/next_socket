@@ -1,12 +1,16 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { socket } from "../api/socket";
 import { useEffect, useState } from "react";
+
+import { socket } from "../api/socket";
+
 import styles from "./slug.module.css";
+
 import { getCookie } from "../api/cookies";
 
 import UsernamePrompt from "../components/usernamePrompt/usernamePrompt";
+import Alert from "../components/alert/alert"
 
 function checkRoomExists(roomName: string) {
   return new Promise((resolve) => {
@@ -40,13 +44,11 @@ export default function Page() {
 
   const [readyVal, setReadyVal] = useState(0)
   const [playersVal, setPlayersVal] = useState(0)
+  const [isReady, setIsReady] = useState(false)
 
   useEffect(() => {
 
     setUsername(getCookie("username"))
-
-
-    console.log(playersVal)
 
     socket.emit("guess_join_by_url", params.slug);
 
@@ -56,18 +58,15 @@ export default function Page() {
     async function onConnect() {
 
       const playersCount: any = await checkPlayersInRoom(params.slug)
-      console.warn(playersCount)
       setPlayersVal(playersCount)
 
       const roomExists = await checkRoomExists(params.slug)
-
-      console.log(roomExists)
 
       if (!roomExists) {
         router.replace("404") // redirect user to 404 page
       }
 
-      setIsConnected(true);
+      setIsConnected(true); 
       setTransport(socket.io.engine.transport.name);
 
       socket.io.engine.on("upgrade", (transport) => {
@@ -86,13 +85,9 @@ export default function Page() {
       onDisconnect()
     });
 
-    socket.on("join_receive", async () => {
+    socket.on("update_players_count", async () => {
       const playersCount: any = await checkPlayersInRoom(params.slug)
       setPlayersVal(playersCount)
-    });
-
-    socket.on("move_received", () => {
-      console.log("move");
     });
 
 
@@ -101,19 +96,18 @@ export default function Page() {
       setRightTeam(teams.rightTeam)
     })
 
-    socket.on("decreasePlayer", async () => {
-      const playersCount: any = await checkPlayersInRoom(params.slug)
-      setPlayersVal(playersCount)
-    })
+    socket.on("ready_received", (newReadyVal) => {
+      setReadyVal(newReadyVal)
+    })  
 
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
     };
   }, []);
-
+  
   const teamsClickHandler = (team: string) => {
-    socket.emit("teamHand", {
+    socket.emit("team_hand", {
       slug: params.slug,
       leftTeam: leftTeam,
       rightTeam: rightTeam,
@@ -121,18 +115,22 @@ export default function Page() {
       team: team
     })
   }
-
+  
   const readyBtnHandler = () => {
-    console.log(playersVal)
     if (playersVal == 2 || playersVal == 4) {
-      alert("успешно")
+
+      const newIsReady = !isReady
+      setIsReady(newIsReady)
+      socket.emit("ready_hand", newIsReady)
     } else {
-      alert("Нельзя запустить игру с неполными командами")
+      alert("не выполнено")
     }
+    console.log(isReady)
   }
 
   return (
     <div className={styles.slugPage}>
+      <Alert/>
       <UsernamePrompt />
       <p className={styles.roomId}>ID Комнаты: {params.slug} <br /> Имя пользователя: {username}</p>
       <div className={styles.teams}>
