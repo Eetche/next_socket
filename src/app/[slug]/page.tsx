@@ -11,6 +11,7 @@ import { getCookie } from "../api/cookies";
 
 import UsernamePrompt from "../components/usernamePrompt/usernamePrompt";
 import Alert from "../components/alert/alert"
+import Game from "../components/game/game";
 
 function checkRoomExists(roomName: string) {
   return new Promise((resolve) => {
@@ -50,14 +51,20 @@ export default function Page() {
   const [alertText, setAlertText] = useState("")
 
   const [startBtnDisp, setStartBtnDisp] = useState("none")
-  const [readyBtnDisp, setReadyBtnDisp] = useState("block")
-  const [readyCountDisp, setReadyCountDisp] = useState("block")
-  const [teamsDisp, setTeamsDisp] = useState("flex")
 
-  const [speakers, setSpeakers] = useState<string[]>([]) 
+  const [gameDisp, setGameDisp] = useState("flex")
+  const [pageDisp, setPageDisp] = useState("flex")
+
+  const [speakers, setSpeakers] = useState<string[]>([])
   const [guessers, setGuessers] = useState<string[]>([])
 
   const [readyDisabled, setReadyDisabled] = useState(true)
+
+  function hideForGame() {
+    setPageDisp("none")
+    setGameDisp("flex")
+    setStartBtnDisp("none")
+  }
 
   useEffect(() => {
 
@@ -68,6 +75,7 @@ export default function Page() {
     if (socket.connected) {
       onConnect();
     }
+
     async function onConnect() {
 
       const playersCount: any = await checkPlayersInRoom(params.slug)
@@ -79,13 +87,14 @@ export default function Page() {
         router.replace("404") // redirect user to 404 page
       }
 
-      setIsConnected(true); 
+      setIsConnected(true);
       setTransport(socket.io.engine.transport.name);
 
       socket.io.engine.on("upgrade", (transport) => {
         setTransport(transport.name);
       });
     }
+
 
     function onDisconnect() {
       setIsConnected(false);
@@ -104,19 +113,21 @@ export default function Page() {
     });
 
     socket.on("update_teams", (teams) => {
-      const curUsername = getCookie("username") 
-      
+      const curUsername = getCookie("username")
+
       setLeftTeam(teams.leftTeam)
       setRightTeam(teams.rightTeam)
 
       if (teams.leftTeam.includes(curUsername) || teams.rightTeam.includes(curUsername)) {
         setReadyDisabled(false)
+      } else {
+        setReadyDisabled(true)
       }
     })
 
     socket.on("update_ready", (newReadyVal) => {
       setReadyVal(newReadyVal)
-    })  
+    })
 
     socket.on("host_starting", async () => {
       console.log(leftTeam, rightTeam, playersVal)
@@ -134,7 +145,7 @@ export default function Page() {
     })
 
     socket.on("start_hand", (players) => {
-      console.log(`speakers: ${players.speakers}`)
+      hideForGame()
     })
 
     return () => {
@@ -142,8 +153,8 @@ export default function Page() {
       socket.off("disconnect", onDisconnect);
     };
   }, []);
-  
-  function newAlert(text : string) {
+
+  function newAlert(text: string) {
 
     setAlertTop(0)
     setAlertText(text)
@@ -152,6 +163,7 @@ export default function Page() {
       setAlertTop(-50)
     }, 3000)
   }
+
 
   const teamsClickHandler = (team: string) => {
     socket.emit("team_hand", {
@@ -162,7 +174,7 @@ export default function Page() {
       team: team
     })
   }
-  
+
   const readyBtnHandler = () => {
     if ((playersVal == 2 || playersVal == 4)) {
 
@@ -177,10 +189,7 @@ export default function Page() {
 
   const startBtnHandler = async () => {
     if ((leftTeam.length == 2 || rightTeam.length == 2 && playersVal == 2) || (leftTeam.length == 2 && rightTeam.length == 2 && playersVal == 4)) {
-      setStartBtnDisp("none")
-      setReadyBtnDisp("none")
-      setReadyCountDisp("none")
-      setTeamsDisp("none")
+      hideForGame()
       socket.emit("start_send", {
         leftTeam: leftTeam,
         rightTeam: rightTeam,
@@ -195,9 +204,10 @@ export default function Page() {
 
   return (
     <div className={styles.slugPage}>
-      <Alert top={alertTop} text={alertText}/>
+      <Alert top={alertTop} text={alertText} />
       <UsernamePrompt />
-      <div className={styles.teams} style={{ display: teamsDisp }}>
+      <Game display={gameDisp} />
+      <div className={styles.teams} style={{ display: pageDisp }}>
         <div className={styles.leftTeam} onClick={() => teamsClickHandler("left")}>
           <p>{leftTeam[0]}</p>
           <p>{leftTeam[1]}</p>
@@ -208,8 +218,8 @@ export default function Page() {
         </div>
       </div>
       <div className={styles.ready}>
-        <p style={{ display: readyCountDisp }}>{readyVal}/{playersVal}</p>
-        <button className={styles.readyBtn} onClick={readyBtnHandler} disabled={readyDisabled} style={{ display: readyBtnDisp }}>Готов</button>
+        <p style={{ display: pageDisp }}>{readyVal}/{playersVal}</p>
+        <button className={styles.readyBtn} onClick={readyBtnHandler} disabled={readyDisabled} style={{ display: pageDisp }}>Готов</button>
         <button className={styles.startBtn} onClick={startBtnHandler} style={{ display: startBtnDisp }}>Начать</button>
       </div>
     </div>

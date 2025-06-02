@@ -1,6 +1,7 @@
 import { createServer } from "http";
 import next from "next";
 import { Server } from "socket.io";
+import fs from "fs"
 
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
@@ -24,6 +25,13 @@ app.prepare().then(() => {
   io.on("connection", (socket) => {
     console.log("new server connection: ", socket.id);
 
+
+    socket.on("read_words", (room) => {
+      fs.readFile("./src/app/russian-words.txt", "utf8", (err, data) => {
+        const lines = data.split("\n")
+        io.to(room).emit("success_read", lines)
+      })
+    })
 
     socket.on("join", (data) => {
       socket.join(data.value)

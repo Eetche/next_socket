@@ -58,4 +58,6 @@
   padding: 15px;
   width: 20%;
   font-size: 75%;
+  justify-content: center;
+  align-items: center;
 }
