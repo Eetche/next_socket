@@ -54,7 +54,7 @@
   gap: 10px;
 }
 
-.readyBtn {
+.readyBtn, .startBtn {
   padding: 15px;
   width: 20%;
   font-size: 75%;
