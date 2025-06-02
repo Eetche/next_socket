@@ -1,17 +1,9 @@
-import { useState } from "react";
 import styles from "./alert.module.css"
 
-export default function Alert() {
-    const [alertTxt, setAlertTxt] = useState("")
-
-    const useAlert = () => {
-        
-    }
-
-    
+export default function Alert(props) {
     return (
-        <div className={styles.alert}>
-            <p>{alertTxt}</p>
+        <div className={styles.alert} style={{top: props.top}}>
+            <p>{props.text}</p>
         </div>
     )
 }

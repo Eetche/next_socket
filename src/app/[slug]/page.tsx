@@ -46,6 +46,9 @@ export default function Page() {
   const [playersVal, setPlayersVal] = useState(0)
   const [isReady, setIsReady] = useState(false)
 
+  const [alertTop, setAlertTop] = useState(-50)
+  const [alertText, setAlertText] = useState("")
+
   useEffect(() => {
 
     setUsername(getCookie("username"))
@@ -96,7 +99,7 @@ export default function Page() {
       setRightTeam(teams.rightTeam)
     })
 
-    socket.on("ready_received", (newReadyVal) => {
+    socket.on("update_ready", (newReadyVal) => {
       setReadyVal(newReadyVal)
     })  
 
@@ -106,6 +109,16 @@ export default function Page() {
     };
   }, []);
   
+  function useAlert(text : string) {
+
+    setAlertTop(0)
+    setAlertText(text)
+
+    setTimeout(() => {
+      setAlertTop(-50)
+    }, 3000)
+  }
+
   const teamsClickHandler = (team: string) => {
     socket.emit("team_hand", {
       slug: params.slug,
@@ -121,18 +134,17 @@ export default function Page() {
 
       const newIsReady = !isReady
       setIsReady(newIsReady)
-      socket.emit("ready_hand", newIsReady)
+      socket.emit("ready_hand", newIsReady, params.slug)
     } else {
-      alert("не выполнено")
+      useAlert("Невозможно начать игру")
     }
-    console.log(isReady)
   }
+
 
   return (
     <div className={styles.slugPage}>
-      <Alert/>
+      <Alert top={alertTop} text={alertText}/>
       <UsernamePrompt />
-      <p className={styles.roomId}>ID Комнаты: {params.slug} <br /> Имя пользователя: {username}</p>
       <div className={styles.teams}>
         <div className={styles.leftTeam} onClick={() => teamsClickHandler("left")}>
           <p>{leftTeam[0]}</p>

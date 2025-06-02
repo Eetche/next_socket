@@ -19,28 +19,34 @@ app.prepare().then(() => {
 
   let currentRoom;
 
-  let playersReady = new Set();
+  let playersReady = new Map();
 
   io.on("connection", (socket) => {
     console.log("new server connection: ", socket.id);
-
+    
+    
     socket.on("join", (data) => {
       socket.join(data.value)
       currentRoom = data.value
       socket.to(data.value).emit("update_players_count")
-      console.log("join:", data.value)
-    });
 
+
+      if (!playersReady.has(currentRoom)) {
+        playersReady.set(currentRoom, new Set())
+      }
+      
+    });
+    
     socket.on("checkRoomExists", (roomName, callback) => {
       const roomExists = io.sockets.adapter.rooms.has(roomName)
       callback(roomExists)
     })
-
+    
     socket.on("checkPlayersCount", async (roomName, callback) => {
       const sockets = await io.in(roomName).fetchSockets()
       callback(sockets.length)
     })
-
+    
     socket.on("guess_join_by_url", (room) => {
       if (io.sockets.adapter.rooms.has(room)) {
         currentRoom = room
@@ -48,42 +54,48 @@ app.prepare().then(() => {
         socket.to(room).emit("update_players_count")
       }
     })
-
+    
     socket.on("disconnect", () => {
       console.log(`client disconnected: ${socket.id}, room: ${currentRoom}`)
+      playersReady.get(currentRoom).delete(socket.id)
       socket.to(currentRoom).emit("update_players_count")
-    })
+      io.to(currentRoom).emit("update_ready", playersReady.get(currentRoom).size)
 
+      if (socket.id == currentRoom) {
+        playersReady.delete(currentRoom)
+      }
+    })
+    
     socket.on("team_hand", (data) => {
       const slug = data.slug
       const username = data.username
       const team = data.team
-
-
+      
+      
       if (team == "left" && leftTeam.length < 2) {
-
+        
         if (rightTeam.includes(username)) {
           rightTeam = rightTeam.filter((player) => player !== username)
           leftTeam.push(username)
         } else if (!rightTeam.includes(username) && !leftTeam.includes(username)) {
           leftTeam.push(username)
         }
-
-
+        
+        
       } else if (team == "right" && rightTeam.length < 2) {
-
+        
         if (leftTeam.includes(username)) {
-
+          
           leftTeam = leftTeam.filter((player) => player !== username)
           rightTeam.push(username)
-
+          
         } else if (!leftTeam.includes(username) && !rightTeam.includes(username)) {
-
+          
           rightTeam.push(username)
-
+          
         }
       }
-
+      
       io.to(slug).emit("update_teams", {
         leftTeam: leftTeam,
         rightTeam: rightTeam
@@ -93,14 +105,13 @@ app.prepare().then(() => {
       console.log(`left team: ${leftTeam} \n`)
     })
 
-    socket.on("ready_hand", (isReady) => {
+    socket.on("ready_hand", (isReady, room) => {
       if (isReady) {
-        playersReady.add(socket.id)
+        playersReady.get(room).add(socket.id)
       } else {
-        playersReady.delete(socket.id)
+        playersReady.get(room).delete(socket.id)
       }
-
-      io.to(currentRoom).emit("ready_received", playersReady.size)
+      io.to(room).emit("update_ready", playersReady.get(room).size)
     
     })  
 
