@@ -109,7 +109,7 @@ export default function Page() {
     };
   }, []);
   
-  function useAlert(text : string) {
+  function newAlert(text : string) {
 
     setAlertTop(0)
     setAlertText(text)
@@ -136,7 +136,7 @@ export default function Page() {
       setIsReady(newIsReady)
       socket.emit("ready_hand", newIsReady, params.slug)
     } else {
-      useAlert("Невозможно начать игру")
+      newAlert("Невозможно начать игру")
     }
   }
 
