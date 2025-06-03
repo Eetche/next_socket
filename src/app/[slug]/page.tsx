@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { socket } from "../api/socket";
 
@@ -52,7 +52,7 @@ export default function Page() {
 
   const [startBtnDisp, setStartBtnDisp] = useState("none")
 
-  const [gameDisp, setGameDisp] = useState("flex")
+  const [gameDisp, setGameDisp] = useState("none")
   const [pageDisp, setPageDisp] = useState("flex")
 
   const [speakers, setSpeakers] = useState<string[]>([])

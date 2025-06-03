@@ -3,6 +3,8 @@ import next from "next";
 import { Server } from "socket.io";
 import fs from "fs"
 
+import randomInt from "./src/app/api/randomInt.js"
+
 const dev = process.env.NODE_ENV !== "production";
 const hostname = "localhost";
 const port = 3000;
@@ -21,6 +23,7 @@ app.prepare().then(() => {
   let currentRoom;
 
   let playersReady = new Map();
+  let wordsForRoom = new Map()
 
   io.on("connection", (socket) => {
     console.log("new server connection: ", socket.id);
@@ -30,6 +33,24 @@ app.prepare().then(() => {
       fs.readFile("./src/app/russian-words.txt", "utf8", (err, data) => {
         const lines = data.split("\n")
         io.to(room).emit("success_read", lines)
+
+        if (!wordsForRoom.has(room)) {
+          wordsForRoom.set(room, new Set())
+        }
+      })
+    })
+
+    socket.on("random_word", (room) => {
+      fs.readFile("./src/app/russian-words.txt", "utf8", (err, data) => {
+        const lines = data.split("\n")
+        const randomWord = lines[randomInt(225)]
+        const wordsForRoomArr = Array.from(wordsForRoom.get(room))
+
+        wordsForRoom.get(room).add(randomWord)
+        
+        
+        
+        io.to(room).emit("get_random_word", wordsForRoomArr)
       })
     })
 
