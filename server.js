@@ -23,11 +23,13 @@ app.prepare().then(() => {
   let currentRoom;
 
   let playersReady = new Map();
-  let wordsForRoom = new Map()
+  let wordsForRoom = new Map();
+
+  const Allspeakers = []
+  const Allguessers = []
 
   io.on("connection", (socket) => {
     console.log("new server connection: ", socket.id);
-
 
     socket.on("read_words", (room) => {
       fs.readFile("./src/app/russian-words.txt", "utf8", (err, data) => {
@@ -44,11 +46,8 @@ app.prepare().then(() => {
       fs.readFile("./src/app/russian-words.txt", "utf8", (err, data) => {
         const lines = data.split("\n")
         const randomWord = lines[randomInt(225)]
-        const wordsForRoomArr = Array.from(wordsForRoom.get(room))
-
         wordsForRoom.get(room).add(randomWord)
-        
-        
+        const wordsForRoomArr = Array.from(wordsForRoom.get(room))
         
         io.to(room).emit("get_random_word", wordsForRoomArr)
       })
@@ -148,6 +147,10 @@ app.prepare().then(() => {
 
     })
 
+    socket.on("get_teams", (room) => {
+      io.to(room).emit("give_teams", {guessers: Allguessers, speakers: Allspeakers})
+    })
+
     socket.on("start_send", async (data) => {
       const randomFloor = Math.random()
 
@@ -159,17 +162,19 @@ app.prepare().then(() => {
 
       const playersVal = await io.in(data.room).fetchSockets()
 
-      function sortPlayers(revers) {
+      function sortPlayers(reverse) {
         if (leftTeam.length == 2 || rightTeam.length == 2 && playersVal == 2) {
-          if (revers) {
+          console.log("first")
+          if (reverse) {
             speakers.push(leftTeam[0])
             guessers.push(leftTeam[1])
           } else {
-            speakers.push(leftTeam[1])
+            speakers.push(rightTeam[0])
             guessers.push(rightTeam[1])
           }
         } else if (leftTeam.length == 2 && rightTeam.length == 2 && playersVal == 4) {
-          if (revers) {
+          console.log("second")
+          if (reverse) {
             speakers.push(leftTeam[0], rightTeam[1])
             guessers.push(leftTeam[1], rightTeam[0])
           } else {
@@ -187,7 +192,8 @@ app.prepare().then(() => {
         console.log(`speakers: ${speakers} \n guessers: ${guessers}`)
       }
 
-
+      Allguessers.push(guessers)
+      Allspeakers.push(speakers)
       
       io.to(data.room).emit("start_hand", {
         speakers: speakers,

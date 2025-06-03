@@ -54,10 +54,7 @@ export default function Page() {
 
   const [gameDisp, setGameDisp] = useState("none")
   const [pageDisp, setPageDisp] = useState("flex")
-
-  const [speakers, setSpeakers] = useState<string[]>([])
-  const [guessers, setGuessers] = useState<string[]>([])
-
+  
   const [readyDisabled, setReadyDisabled] = useState(true)
 
   function hideForGame() {
