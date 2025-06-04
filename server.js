@@ -48,8 +48,8 @@ app.prepare().then(() => {
         const randomWord = lines[randomInt(225)]
         wordsForRoom.get(room).add(randomWord)
         const wordsForRoomArr = Array.from(wordsForRoom.get(room))
-        
-        io.to(room).emit("get_random_word", wordsForRoomArr)
+
+        io.to(room).emit("get_random_word", {wordsForRoom: wordsForRoomArr, Allguessers: Allguessers, Allspeakers: Allspeakers})
       })
     })
 
@@ -91,6 +91,10 @@ app.prepare().then(() => {
 
       if (socket.id == currentRoom) {
         playersReady.delete(currentRoom)
+      }
+
+      if (Allspeakers.includes()) {
+        
       }
     })
 
@@ -148,7 +152,7 @@ app.prepare().then(() => {
     })
 
     socket.on("get_teams", (room) => {
-      io.to(room).emit("give_teams", {guessers: Allguessers, speakers: Allspeakers})
+      io.to(room).emit("give_teams", { guessers: Allguessers, speakers: Allspeakers })
     })
 
     socket.on("start_send", async (data) => {
@@ -163,38 +167,51 @@ app.prepare().then(() => {
       const playersVal = await io.in(data.room).fetchSockets()
 
       function sortPlayers(reverse) {
-        if (leftTeam.length == 2 || rightTeam.length == 2 && playersVal == 2) {
-          console.log("first")
-          if (reverse) {
-            speakers.push(leftTeam[0])
-            guessers.push(leftTeam[1])
-          } else {
-            speakers.push(rightTeam[0])
-            guessers.push(rightTeam[1])
+        if (playersVal.length == 2) {
+
+          if (leftTeam.length == 2) {
+            if (reverse) {
+              speakers.push(leftTeam[0])
+              guessers.push(leftTeam[1])
+            } else {
+              speakers.push(leftTeam[1])
+              guessers.push(leftTeam[0])
+            }
+          } else if (rightTeam.length == 2) {
+            if (reverse) {
+              speakers.push(rightTeam[0])
+              guessers.push(rightTeam[1])
+            } else {
+              speakers.push(rightTeam[1])
+              guessers.push(rightTeam[0])
+            }
+          } else if (playersVal == 4) {
+            if (reverse) {
+              speakers.push(rightTeam[0])
+              speakers.push(leftTeam[0])
+              guessers.push(rightTeam[1])
+              guessers.push(leftTeam[1])
+            } else {
+              speakers.push(rightTeam[1])
+              speakers.push(leftTeam[1])
+              guessers.push(rightTeam[0])
+              guessers.push(leftTeam[0])
+            }
           }
-        } else if (leftTeam.length == 2 && rightTeam.length == 2 && playersVal == 4) {
-          console.log("second")
-          if (reverse) {
-            speakers.push(leftTeam[0], rightTeam[1])
-            guessers.push(leftTeam[1], rightTeam[0])
-          } else {
-            speakers.push(leftTeam[1], rightTeam[0])
-            guessers.push(leftTeam[0], rightTeam[1])
-          }
+
         }
       }
 
       if (randomFloor > 0.5) {
         sortPlayers(true)
-        console.log(`speakers: ${speakers} \n guessers: ${guessers}`)
       } else {
         sortPlayers(false)
-        console.log(`speakers: ${speakers} \n guessers: ${guessers}`)
       }
+      console.log(`speakers: ${speakers} \n guessers: ${guessers}`)
 
-      Allguessers.push(guessers)
-      Allspeakers.push(speakers)
-      
+      Allguessers.push(...guessers)
+      Allspeakers.push(...speakers)
+
       io.to(data.room).emit("start_hand", {
         speakers: speakers,
         guessers: guessers

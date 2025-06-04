@@ -20,39 +20,41 @@ export default function Game(props : any) {
     
     useEffect(() => {
         socket.emit("read_words", params.slug)
-        socket.emit("get_teams", params.slug)
-
+        console.log("first emits")
+        
         socket.on("success_read", (words) => {
             setAllWords(words)
+            socket.emit("get_teams", params.slug)
         })
 
-        socket.on("get_random_word", (roomArr) => {
-            setUsedWordsState(roomArr)
+        socket.on("get_random_word", (data) => {
+            const roomArr = data.wordsForRoom
+            const Allspeakers = data.Allspeakers
+            const Allguessers = data.Allguessers
+
             
-            if (!isSpeaker) {
-                const arrForGuesser = roomArr.pop()
-                setUsedWordsState(arrForGuesser)
-                console.log(`guesser: ${arrForGuesser}`)
-            } else {
-                
-                console.log(`speaker: ${roomArr}`)
+            if (!Allspeakers.includes(username)) {
+
+                roomArr.pop()
             }
+            console.log(roomArr)
+
+            setUsedWordsState(roomArr)
         })
 
-        socket.on("give_teams", (data) => {
+        socket.on("start_hand", (data) => {
+
             const speakers = data.speakers
             const guessers = data.guessers
-
+    
             if (speakers.includes(username)) {
-                setIsSpeaker(true)
                 setNextBtnDisp("block")
             } else {
                 setNextBtnDisp("none")
-                setIsSpeaker(false)
             }
+
+            console.log(`is really speaker: ${speakers.includes(username)}`)
         })
-
-
     }, [])
 
     async function nextHand() {

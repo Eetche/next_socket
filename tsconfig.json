@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/server.js", "src/app/components/game/game.tsx", "src/app/api/randomInt.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/server.js", "src/app/components/game/game.tsx", "src/app/api/randomInt.js", "src/app/api/cookies.js"],
   "exclude": ["node_modules"]
 }
